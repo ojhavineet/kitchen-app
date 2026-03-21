@@ -3,99 +3,91 @@ import random
 
 st.set_page_config(page_title="Punekar Kitchen", page_icon="🍳")
 
-# --- Custom Styling for Mobile ---
+# --- Custom Styling ---
 st.markdown("""
     <style>
-    .stButton>button { width: 100%; border-radius: 10px; height: 3em; background-color: #FF4B4B; color: white; }
-    .recipe-box { background-color: #f0f2f6; padding: 15px; border-radius: 10px; border-left: 5px solid #FF4B4B; }
+    .stButton>button { width: 100%; border-radius: 10px; height: 3em; background-color: #FF4B4B; color: white; font-weight: bold; }
+    .recipe-box { background-color: #f0f2f6; padding: 20px; border-radius: 10px; border-left: 5px solid #FF4B4B; margin-bottom: 20px; }
+    .shopping-box { background-color: #fff4e6; padding: 15px; border-radius: 10px; border: 1px dashed #ff922b; }
     </style>
     """, unsafe_allow_value=True)
 
 st.title("🍳 Punekar Kitchen")
-st.write("Smart suggestions for your daily meals.")
+st.write("Manage your pantry and get meal ideas instantly.")
 
-# --- 1. The Digital Pantry ---
-with st.expander("🛒 What's in your Kitchen?", expanded=False):
+# --- 1. The Digital Pantry & Automated Shopping List ---
+inventory = {
+    "Onions / Garlic": True,
+    "Tomatoes": True,
+    "Paneer / Tofu": False,
+    "Rice": True,
+    "Atta / Bhakri Flour": False,
+    "Mixed Veg (Carrot/Beans)": False,
+    "Noodles / Pasta": False,
+    "Cheese / Butter / Cream": False,
+    "Kanda Lasun / Goda Masala": True,
+    "Chinese Sauces": False
+}
+
+with st.expander("🛒 Inventory Check (Tick what you HAVE)", expanded=True):
+    updated_inventory = {}
     col1, col2 = st.columns(2)
-    with col1:
-        has_onion = st.checkbox("Onions / Garlic", value=True)
-        has_tomato = st.checkbox("Tomatoes", value=True)
-        has_paneer = st.checkbox("Paneer / Tofu")
-        has_rice = st.checkbox("Rice", value=True)
-        has_atta = st.checkbox("Atta / Bhakri Flour")
-    with col2:
-        has_veggies = st.checkbox("Mixed Veg (Carrot/French Beans)")
-        has_noodles = st.checkbox("Noodles / Pasta")
-        has_cheese = st.checkbox("Cheese / Butter / Cream")
-        has_spices = st.checkbox("Kanda Lasun Masala / Goda Masala", value=True)
-        has_sauces = st.checkbox("Chinese Sauces (Soy/Chili)")
+    
+    # Create checkboxes and track what is missing
+    keys = list(inventory.keys())
+    for i, item in enumerate(keys):
+        column = col1 if i < 5 else col2
+        updated_inventory[item] = column.checkbox(item, value=inventory[item])
 
-# --- 2. Advanced Recipe Database ---
-# Each cuisine now has multiple options for the "Refresh" feature
+# Identify missing items for the shopping list
+missing_items = [item for item, involved in updated_inventory.items() if not involved]
+
+# --- 2. Enhanced Recipe Database ---
 recipes = {
     "Maharashtrian": [
-        {
-            "name": "Kanda Batata Pohe",
-            "needs": [has_onion],
-            "steps": "1. Soak pohe for 2 mins. 2. Sauté onions, chilies, and curry leaves in oil. 3. Add turmeric and salt. 4. Mix in pohe and steam for 2 mins with a lid."
-        },
-        {
-            "name": "Zunka Bhakri",
-            "needs": [has_onion, has_atta, has_spices],
-            "steps": "1. Sauté lots of garlic and onions. 2. Add Kanda Lasun Masala and water. 3. Slowly stir in Besan until thick. 4. Serve with hot Bhakri."
-        }
+        {"name": "Kanda Batata Pohe", "needs": ["Onions / Garlic"], "steps": "1. Soak pohe. 2. Sauté onions, chilies, curry leaves. 3. Add turmeric/salt. 4. Mix pohe and steam."},
+        {"name": "Zunka Bhakri", "needs": ["Onions / Garlic", "Atta / Bhakri Flour", "Kanda Lasun / Goda Masala"], "steps": "1. Sauté garlic/onions. 2. Add Masala and water. 3. Stir in Besan until thick. 4. Serve with hot Bhakri."}
     ],
     "Indian": [
-        {
-            "name": "Paneer Butter Masala",
-            "needs": [has_paneer, has_tomato, has_cheese],
-            "steps": "1. Puree tomatoes and ginger. 2. Cook in butter with red chili powder. 3. Add paneer cubes and a splash of cream/milk. 4. Garnish with kasuri methi."
-        },
-        {
-            "name": "Veg Pulao",
-            "needs": [has_rice, has_veggies, has_onion],
-            "steps": "1. Sauté whole spices and onions. 2. Add chopped veggies and washed rice. 3. Add 2 cups water for 1 cup rice. 4. Pressure cook for 2 whistles."
-        }
+        {"name": "Paneer Butter Masala", "needs": ["Paneer / Tofu", "Tomatoes", "Cheese / Butter / Cream"], "steps": "1. Puree tomatoes. 2. Cook in butter with spices. 3. Add paneer cubes and cream. 4. Garnish with kasuri methi."},
+        {"name": "Veg Pulao", "needs": ["Rice", "Mixed Veg (Carrot/Beans)", "Onions / Garlic"], "steps": "1. Sauté whole spices/onions. 2. Add veggies and washed rice. 3. Add water (2:1 ratio). 4. Pressure cook for 2 whistles."}
     ],
     "Chinese": [
-        {
-            "name": "Veg Hakka Noodles",
-            "needs": [has_noodles, has_veggies, has_sauces],
-            "steps": "1. Boil noodles al-dente. 2. Shred veggies thinly. 3. Stir fry on high heat with soy sauce and vinegar. 4. Toss in noodles and black pepper."
-        },
-        {
-            "name": "Chilli Paneer (Dry)",
-            "needs": [has_paneer, has_sauces, has_onion],
-            "steps": "1. Dice paneer and coat in cornflour (optional). 2. Sauté capsicum and onions. 3. Add soy sauce, green chili sauce, and paneer. 4. Toss until coated."
-        }
+        {"name": "Veg Hakka Noodles", "needs": ["Noodles / Pasta", "Mixed Veg (Carrot/Beans)", "Chinese Sauces"], "steps": "1. Boil noodles. 2. Shred veggies. 3. Stir fry on high heat with sauces. 4. Toss in noodles and pepper."},
+        {"name": "Chilli Paneer", "needs": ["Paneer / Tofu", "Chinese Sauces", "Onions / Garlic"], "steps": "1. Dice paneer. 2. Sauté capsicum/onions. 3. Add sauces and paneer. 4. Toss until coated."}
     ],
     "Continental": [
-        {
-            "name": "Pink Sauce Pasta",
-            "needs": [has_noodles, has_tomato, has_cheese],
-            "steps": "1. Boil pasta. 2. Make a quick tomato sauce and mix with a bit of cream/cheese. 3. Add oregano and chili flakes. 4. Toss pasta and serve."
-        }
+        {"name": "Cheesy Pasta", "needs": ["Noodles / Pasta", "Cheese / Butter / Cream"], "steps": "1. Boil pasta. 2. Make butter-garlic-cheese sauce. 3. Add oregano/flakes. 4. Toss pasta and serve."}
     ]
 }
 
-# --- 3. The Logic & Refresh Mechanism ---
+# --- 3. Interaction Logic ---
 st.divider()
-cuisine = st.radio("Pick your craving:", ["Maharashtrian", "Indian", "Chinese", "Continental"], horizontal=True)
+cuisine = st.radio("What's the mood?", ["Maharashtrian", "Indian", "Chinese", "Continental"], horizontal=True)
 
-# This button triggers the "Refresh" by picking a random valid recipe
-if st.button(f"Suggest a {cuisine} Meal"):
-    # Filter recipes based on ingredients available
-    available_options = [r for r in recipes[cuisine] if all(r["needs"])]
+if st.button(f"Give me a {cuisine} suggestion"):
+    # Check if we have the ingredients for each recipe in that cuisine
+    available = []
+    for r in recipes[cuisine]:
+        if all(updated_inventory[ing] for ing in r["needs"]):
+            available.append(r)
     
-    if available_options:
-        pick = random.choice(available_options)
-        st.success(f"How about **{pick['name']}**?")
-        st.markdown(f"""
-        <div class="recipe-box">
-        <strong>Method:</strong><br>{pick['steps']}
-        </div>
-        """, unsafe_allow_value=True)
+    if available:
+        pick = random.choice(available)
+        st.success(f"Suggesting: **{pick['name']}**")
+        st.markdown(f"""<div class="recipe-box"><strong>How to make:</strong><br>{pick['steps']}</div>""", unsafe_allow_value=True)
     else:
-        st.warning("Oops! You're missing some key ingredients for this cuisine. Try ticking more items above or switch cuisines.")
+        st.warning(f"You don't have enough ingredients for a full {cuisine} meal right now. Check your shopping list below!")
 
-st.info("💡 Don't like the result? Just click the button again to 'Refresh' and get a different suggestion!")
+# --- 4. The Shopping List (Sticky at the bottom) ---
+if missing_items:
+    st.divider()
+    st.subheader("📝 Smart Shopping List")
+    st.write("You are currently out of these items:")
+    
+    shop_list_html = "".join([f"<li>{item}</li>" for item in missing_items])
+    st.markdown(f"""
+    <div class="shopping-box">
+        <ul>{shop_list_html}</ul>
+    </div>
+    """, unsafe_allow_value=True)
