@@ -18,7 +18,7 @@ MASTER_INGREDIENTS = [
     "Paneer", "Potato", "Cauliflower", "Spinach", "Green Peas", "Capsicum", "Carrot", "French Beans",
     "Atta", "Rice", "Poha", "Besan", "Maida", "Rava", "Jowar Flour", "Bajra Flour",
     "Tur Dal", "Moong Dal", "Chana Dal", "Urad Dal", "Masoor Dal", "Matki",
-    "Noodles", "Pasta", "Soy Sauce", "Vinegar", "Chili Sauce", "Schezwan Sauce", "Tomato Ketchup' 
+    "Noodles", "Pasta", "Soy Sauce", "Vinegar", "Chili Sauce", "Schezwan Sauce", "Tomato Ketchup" 
     "Cheese", "Butter", "Fresh Cream", "Milk", "Curd",
     "Kanda Lasun Masala", "Goda Masala", "Turmeric", "Cumin Seeds", "Mustard Seeds", "Hing"
 ]
