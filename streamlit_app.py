@@ -1,104 +1,97 @@
 import streamlit as st
 import random
+import urllib.parse
 
-st.set_page_config(page_title="Punekar Kitchen Pro", page_icon="🌶️")
+st.set_page_config(page_title="Punekar Kitchen Pro", page_icon="🌶️", layout="centered")
 
 # --- Styling ---
 st.markdown("""
     <style>
-    .stButton>button { width: 100%; border-radius: 10px; background-color: #2e7d32; color: white; }
-    .recipe-card { background-color: #ffffff; padding: 20px; border-radius: 15px; border: 1px solid #e0e0e0; box-shadow: 2px 2px 10px rgba(0,0,0,0.05); color: black; }
+    .stButton>button { width: 100%; border-radius: 10px; background-color: #2e7d32; color: white; height: 3.5em; font-weight: bold; }
+    .whatsapp-btn { 
+        display: block; width: 100%; text-align: center; background-color: #25D366; 
+        color: white !important; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 20px;
+    }
+    .recipe-card { background-color: #ffffff; padding: 15px; border-radius: 12px; border: 1px solid #ddd; color: black; margin-bottom: 15px; }
+    .inventory-tag { background-color: #e8f5e9; padding: 4px 10px; border-radius: 12px; display: inline-block; margin: 2px; border: 1px solid #2e7d32; font-size: 0.85em; color: black; }
+    .rating-box { background-color: #fff9db; padding: 10px; border-radius: 8px; border: 1px solid #fcc419; margin-top: 10px; font-size: 0.9em; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 1. The Database (Massive Expansion) ---
-# In a real app, this would be a separate file with 1000s of rows
-MASTER_INGREDIENTS = [
-    "Onions", "Tomatoes", "Ginger", "Garlic", "Green Chilies", "Coriander", "Curry Leaves", "brinjal", 
-    "Paneer", "Potato", "Cauliflower", "Spinach", "Green Peas", "Capsicum", "Carrot", "French Beans",
-    "Atta", "Rice", "Poha", "Besan", "Maida", "Rava", "Jowar Flour", "Bajra Flour",
-    "Tur Dal", "Moong Dal", "Chana Dal", "Urad Dal", "Masoor Dal", "Matki",
-    "Noodles", "Pasta", "Soy Sauce", "Vinegar", "Chili Sauce", "Schezwan Sauce", "Tomato Ketchup" 
-    "Cheese", "Butter", "Fresh Cream", "Milk", "Curd",
-    "Kanda Lasun Masala", "Goda Masala", "Turmeric", "Cumin Seeds", "Mustard Seeds", "Hing"
-]
+# --- 1. Master Data ---
+CATEGORIES = {
+    "🥦 Veggies": ["Onion", "Tomato", "Potato", "Ginger", "Garlic", "Green Chili", "Coriander", "Curry Leaves", "Lemon", "Cauliflower", "Brinjal", "Okra (Bhindi)", "Spinach", "Methi"],
+    "🌾 Grains": ["Atta", "Rice", "Poha", "Besan", "Maida", "Rava", "Jowar Flour", "Sabudana"],
+    "🥛 Dairy": ["Milk", "Curd", "Paneer", "Butter", "Ghee", "Cheese Slices", "Cheese Cubes", "Eggs"],
+    "🧂 Spices": ["Salt", "Turmeric", "Red Chili Powder", "Cumin Seeds", "Mustard Seeds", "Hing", "Kanda Lasun Masala", "Goda Masala"]
+}
 
 recipes = [
-    {"name": "Misal Pav", "cuisine": "Maharashtrian", "needs": ["Matki", "Onions", "Kanda Lasun Masala"], "steps": "1. Sprout and boil matki. 2. Make a spicy 'kat' using onions, coconut, and masala. 3. Serve with pav, farsan, and lemon."},
-    {"name": "Pithla Bhakri", "cuisine": "Maharashtrian", "needs": ["Besan", "Onions", "Garlic", "Jowar Flour"], "steps": "1. Make a thin batter of besan. 2. Sauté onions and garlic. 3. Add batter and stir until thick. 4. Serve with hot Jowar Bhakri."},
-    {"name": "Gobi Manchurian", "cuisine": "Chinese", "needs": ["Cauliflower", "Maida", "Soy Sauce", "Ginger"], "steps": "1. Batter fry cauliflower florets. 2. Make a sauce with ginger, garlic, and soy sauce. 3. Toss florets in sauce. 4. Garnish with spring onions."},
-    {"name": "White Sauce Pasta", "cuisine": "Continental", "needs": ["Pasta", "Milk", "Butter", "Cheese", "Maida"], "steps": "1. Boil pasta. 2. Make roux with butter and maida. 3. Add milk slowly to make sauce. 4. Add cheese and pasta."},
-    {"name": "Dal Tadka", "cuisine": "Indian", "needs": ["Tur Dal", "Tomatoes", "Garlic", "Cumin Seeds"], "steps": "1. Pressure cook dal. 2. Prepare tadka with oil, cumin, and garlic. 3. Add tomatoes and spices. 4. Mix with dal and simmer."}
+    {"name": "Sabudana Khichdi", "needs": ["Sabudana", "Potato"], "cuisine": "Maharashtrian"},
+    {"name": "Cheese Chili Toast", "needs": ["Bread", "Cheese Slices"], "cuisine": "Quick & Tired"},
+    {"name": "Pithla Bhakri", "needs": ["Besan", "Onion", "Jowar Flour"], "cuisine": "Maharashtrian"},
+    {"name": "Mini Paneer Tikka", "needs": ["Paneer", "Curd"], "cuisine": "Kid's Special"}
 ]
 
-# --- 2. Session State Management ---
+# --- 2. State Management (Added Ratings) ---
 if 'my_pantry' not in st.session_state:
-    st.session_state.my_pantry = ["Onions", "Tomatoes", "Rice", "Turmeric"] # Default items
+    st.session_state.my_pantry = set(["Salt", "Turmeric", "Rice", "Onion", "Tomato", "Potato", "Sabudana", "Besan", "Jowar Flour"])
+if 'ratings' not in st.session_state:
+    st.session_state.ratings = {}
 
-# --- 3. The UI Layout ---
-st.title("🌶️ Punekar Kitchen Pro")
-
-# Sidebar for adding new items from the 100s available
+# --- 3. Sidebar ---
 with st.sidebar:
-    st.header("➕ Add to Pantry")
-    new_item = st.selectbox("Search Ingredients:", [""] + sorted(MASTER_INGREDIENTS))
-    if st.button("Add to Kitchen") and new_item != "":
-        if new_item not in st.session_state.my_pantry:
-            st.session_state.my_pantry.append(new_item)
-            st.rerun()
-
-    st.divider()
-    if st.button("🗑️ Clear Pantry"):
-        st.session_state.my_pantry = []
+    st.header("🏪 Add Stock")
+    cat = st.selectbox("Category:", list(CATEGORIES.keys()))
+    selected = st.multiselect(f"Pick items:", CATEGORIES[cat])
+    if st.button("Add to Kitchen"):
+        for item in selected: st.session_state.my_pantry.add(item)
         st.rerun()
 
-# Main Screen - Current Inventory
-st.subheader("Your Current Inventory")
-if not st.session_state.my_pantry:
-    st.info("Your kitchen is empty! Use the sidebar to add ingredients.")
-else:
-    # Display pantry as tags
-    cols = st.columns(3)
-    for i, item in enumerate(st.session_state.my_pantry):
-        if cols[i % 3].button(f"❌ {item}", key=f"del_{item}"):
-            st.session_state.my_pantry.remove(item)
-            st.rerun()
+# --- 4. Main Dashboard ---
+st.title("🌶️ Punekar Kitchen Pro")
 
-# --- 4. Suggestions Engine ---
-st.divider()
-cuisine_choice = st.selectbox("What do you want to cook?", ["All", "Maharashtrian", "Indian", "Chinese", "Continental"])
+# Suggestions Logic
+st.subheader("What's for a meal?")
+mode = st.radio("Style:", ["All", "Quick & Tired", "Kid's Special", "Maharashtrian", "Indian"], horizontal=True)
 
-if st.button("🔍 Find Matching Recipes"):
-    matches = []
-    for r in recipes:
-        # Check if we have all 'needs' in our pantry
-        has_all = all(item in st.session_state.my_pantry for item in r['needs'])
-        if has_all and (cuisine_choice == "All" or r['cuisine'] == cuisine_choice):
-            matches.append(r)
+if st.button("🔍 Suggest Safe Meals"):
+    matches = [r for r in recipes if all(i in st.session_state.my_pantry for i in r['needs'])]
+    if mode != "All":
+        matches = [r for r in matches if r['cuisine'] == mode]
     
     if matches:
-        st.success(f"Found {len(matches)} recipes you can make right now!")
         for m in matches:
-            with st.container():
-                st.markdown(f"""
-                <div class="recipe-card">
-                    <h3>{m['name']} ({m['cuisine']})</h3>
-                    <p><strong>Ingredients used:</strong> {', '.join(m['needs'])}</p>
-                    <p><strong>Steps:</strong> {m['steps']}</p>
-                </div><br>
-                """, unsafe_allow_html=True)
+            rating = st.session_state.ratings.get(m['name'], "No rating yet")
+            st.markdown(f"""
+            <div class="recipe-card">
+                <b>{m['name']}</b> ({m['cuisine']})<br>
+                <span style="font-size:0.8em; color:#666;">⭐ Current Rating: {rating}</span>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Simple Rating Input
+            new_rating = st.select_slider(f"Rate {m['name']}:", options=["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"], key=m['name'])
+            if st.button(f"Save Rating for {m['name']}"):
+                st.session_state.ratings[m['name']] = new_rating
+                st.success("Rating saved!")
     else:
-        st.warning("No exact matches found. Add more ingredients to your pantry!")
+        st.warning("Not enough items in pantry.")
 
-# --- 5. Automated Shopping List ---
-st.divider()
-st.subheader("📝 Missing Ingredients")
-all_needed = set()
-for r in recipes:
-    for item in r['needs']:
-        all_needed.add(item)
+# --- 5. Top Rated (Wife's Favorite List) ---
+if st.session_state.ratings:
+    st.divider()
+    st.subheader("🏆 Dviti's Favorites")
+    for meal, stars in st.session_state.ratings.items():
+        if "⭐⭐⭐⭐" in stars:
+            st.write(f"{stars} - {meal}")
 
-missing = sorted([item for item in all_needed if item not in st.session_state.my_pantry])
+# --- 6. WhatsApp Sync ---
+all_possible_needs = set([i for r in recipes for i in r['needs']])
+missing = sorted([i for i in all_possible_needs if i not in st.session_state.my_pantry])
+
 if missing:
-    st.write("You might need these for other recipes:")
-    st.caption(", ".join(missing))
+    st.divider()
+    shop_text = "🛒 *Kitchen List:*\n" + "\n".join([f"✅ {i}" for i in missing])
+    whatsapp_url = f"https://wa.me/?text={urllib.parse.quote(shop_text)}"
+    st.markdown(f'<a href="{whatsapp_url}" target="_blank" class="whatsapp-btn">📲 WhatsApp List to Husband</a>', unsafe_allow_html=True)
