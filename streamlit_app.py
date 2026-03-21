@@ -4,7 +4,14 @@ import random
 import urllib.parse
 
 # --- 1. App Config & Connection ---
-st.set_page_config(page_title="Punekar Kitchen Pro", page_icon="🌶️", layout="centered")
+import streamlit as st
+
+# This MUST be the first Streamlit command in your script
+st.set_page_config(
+    page_title="Punekar Kitchen Pro", 
+    page_icon="chef_icon.png",  # This matches the filename you uploaded
+    layout="centered"
+)(page_title="Punekar Kitchen Pro", page_icon="🌶️", layout="centered")
 
 # This line connects your app to the Google Sheet 'Memory'
 # Note: You must set up the 'Secrets' in Streamlit for this to work!
