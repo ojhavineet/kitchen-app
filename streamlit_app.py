@@ -14,11 +14,11 @@ st.markdown("""
 # --- 1. The Database (Massive Expansion) ---
 # In a real app, this would be a separate file with 1000s of rows
 MASTER_INGREDIENTS = [
-    "Onions", "Tomatoes", "Ginger", "Garlic", "Green Chilies", "Coriander", "Curry Leaves",
+    "Onions", "Tomatoes", "Ginger", "Garlic", "Green Chilies", "Coriander", "Curry Leaves", "brinjal", 
     "Paneer", "Potato", "Cauliflower", "Spinach", "Green Peas", "Capsicum", "Carrot", "French Beans",
     "Atta", "Rice", "Poha", "Besan", "Maida", "Rava", "Jowar Flour", "Bajra Flour",
     "Tur Dal", "Moong Dal", "Chana Dal", "Urad Dal", "Masoor Dal", "Matki",
-    "Noodles", "Pasta", "Soy Sauce", "Vinegar", "Chili Sauce", "Schezwan Sauce",
+    "Noodles", "Pasta", "Soy Sauce", "Vinegar", "Chili Sauce", "Schezwan Sauce", "Tomato Ketchup' 
     "Cheese", "Butter", "Fresh Cream", "Milk", "Curd",
     "Kanda Lasun Masala", "Goda Masala", "Turmeric", "Cumin Seeds", "Mustard Seeds", "Hing"
 ]
