@@ -1,10 +1,14 @@
 import streamlit as st
 import urllib.parse
 
-# --- 1. App Config ---
-st.set_page_config(page_title="Punekar Kitchen Pro", page_icon="chef_icon.png", layout="centered")
+# --- 1. App Config & Icon ---
+st.set_page_config(
+    page_title="Punekar Kitchen Pro", 
+    page_icon="chef_icon.png", 
+    layout="centered"
+)
 
-# --- 2. Master 250+ Item List ---
+# --- 2. Master 250+ Item List (Categorized) ---
 CATEGORIES = {
     "🥦 Veggies": ["Onion", "Tomato", "Potato", "Ginger", "Garlic", "Green Chili", "Coriander", "Curry Leaves", "Lemon", "Cauliflower", "Cabbage", "Capsicum", "Carrot", "French Beans", "Brinjal", "Okra (Bhindi)", "Bottle Gourd", "Ridge Gourd", "Bitter Gourd", "Pumpkin", "Drumstick", "Spring Onion", "Sweet Potato", "Mint", "Spinach", "Methi", "Radish", "Cucumber", "Beetroot", "Corn", "Mushroom", "Broccoli", "Colocasia Leaves", "Ivy Gourd (Tondli)"],
     "🌾 Grains/Flours": ["Atta", "Rice (Basmati)", "Rice (Indrayani)", "Poha (Thick)", "Poha (Thin)", "Besan", "Maida", "Rava (Suji)", "Jowar Flour", "Bajra Flour", "Nachni Flour", "Sabudana", "Corn Flour", "Vermicelli", "Oats"],
@@ -18,83 +22,57 @@ CATEGORIES = {
 
 # --- 3. Detailed Recipe Database ---
 recipes = [
-    {
-        "name": "Quick Masala Poha", 
-        "needs": ["Poha (Thick)", "Onion", "Green Chili", "Turmeric"], 
-        "steps": "1. Wash Poha and set aside. 2. Sauté onions, green chilies, and curry leaves in oil. 3. Add turmeric and salt. 4. Mix in Poha, cover and steam for 2 mins. Garnish with coriander.",
-        "cuisine": "Quick & Tired"
-    },
-    {
-        "name": "Vangi Bhaji (Brinjal)", 
-        "needs": ["Brinjal", "Onion", "Goda Masala", "Ginger", "Garlic"], 
-        "steps": "1. Slice Brinjal. 2. Heat oil, sauté onions, ginger, and garlic paste. 3. Add Goda Masala and red chili powder. 4. Add brinjal and a splash of water. Cover and cook until tender.",
-        "cuisine": "Maharashtrian"
-    },
-    {
-        "name": "Pithla", 
-        "needs": ["Besan", "Onion", "Garlic", "Green Chili"], 
-        "steps": "1. Make a smooth slurry of Besan and water. 2. Sauté crushed garlic, green chilies, and onions. 3. Pour in the slurry while stirring continuously to avoid lumps. 4. Cook until thick and garnish with coriander.",
-        "cuisine": "Maharashtrian"
-    },
-    {
-        "name": "Sabudana Khichdi", 
-        "needs": ["Sabudana", "Potato", "Green Chili", "Cumin Seeds"], 
-        "steps": "1. Soak Sabudana overnight. 2. Sauté cumin seeds and diced potatoes in oil/ghee. 3. Add green chilies and soaked sabudana. 4. Cook until translucent. (Note: Peanuts skipped for Dviti's safety).",
-        "cuisine": "Maharashtrian"
-    },
-    {
-        "name": "Schezwan Paneer", 
-        "needs": ["Paneer", "Schezwan Sauce", "Capsicum", "Onion", "Garlic"], 
-        "steps": "1. Cube the paneer and sauté until lightly brown. 2. In the same pan, sauté garlic, sliced onions, and capsicum. 3. Add Schezwan sauce and toss the paneer back in. 4. Serve hot.",
-        "cuisine": "Chinese"
-    },
-    {
-        "name": "Moong Dal Paratha", 
-        "needs": ["Atta", "Moong Dal", "Ghee", "Turmeric"], 
-        "steps": "1. Pressure cook Moong Dal with turmeric until dry. 2. Mash the dal with salt and chilies. 3. Stuff a small ball of dal into Atta dough. 4. Roll out and roast on a tawa with Ghee until golden.",
-        "cuisine": "Lunchbox Idea"
-    },
-    {
-        "name": "Misal Pav",
-        "needs": ["Matki", "Onion", "Tomato", "Kanda Lasun Masala", "Pav"],
-        "steps": "1. Sprout the Matki. 2. Make a spicy 'kat' using onions, tomatoes, and Kanda Lasun Masala. 3. Add Matki and simmer. 4. Serve with Pav and farsan.",
-        "cuisine": "Maharashtrian"
-    }
+    {"name": "Quick Masala Poha", "needs": ["Poha (Thick)", "Onion", "Green Chili", "Turmeric"], "steps": "1. Wash Poha. 2. Sauté onions, chilies, and curry leaves. 3. Add turmeric and salt. 4. Mix in Poha, cover and steam for 2 mins.", "cuisine": "Quick & Tired"},
+    {"name": "Vangi Bhaji", "needs": ["Brinjal", "Onion", "Goda Masala"], "steps": "1. Slice Brinjal. 2. Sauté onions. 3. Add Goda Masala and Brinjal. 4. Cover and cook until soft.", "cuisine": "Maharashtrian"},
+    {"name": "Pithla", "needs": ["Besan", "Onion", "Garlic", "Green Chili"], "steps": "1. Mix Besan and water into a slurry. 2. Sauté garlic, onions, and chilies. 3. Pour in slurry and stir until thick.", "cuisine": "Maharashtrian"},
+    {"name": "Sabudana Khichdi", "needs": ["Sabudana", "Potato", "Green Chili"], "steps": "1. Sauté cumin and potatoes. 2. Add soaked sabudana and chilies. 3. Cook until translucent. (Peanuts skipped for Dviti).", "cuisine": "Maharashtrian"},
+    {"name": "Schezwan Paneer", "needs": ["Paneer", "Schezwan Sauce", "Capsicum", "Onion"], "steps": "1. Sauté capsicum and onions. 2. Add Schezwan sauce and paneer cubes. 3. Toss until coated.", "cuisine": "Chinese"},
+    {"name": "Moong Dal Paratha", "needs": ["Atta", "Moong Dal", "Ghee"], "steps": "1. Stuff cooked moong dal into atta dough. 2. Roll and roast on tawa with Ghee until golden.", "cuisine": "Lunchbox Idea"}
 ]
 
 # --- 4. State Management ---
 if 'my_pantry' not in st.session_state:
-    st.session_state.my_pantry = set(["Salt", "Turmeric", "Cooking Oil", "Onion", "Tomato", "Ginger", "Garlic"])
+    st.session_state.my_pantry = set(["Salt", "Turmeric", "Cooking Oil", "Onion", "Tomato"])
 if 'shopping_list' not in st.session_state:
     st.session_state.shopping_list = set()
 if 'ratings' not in st.session_state:
     st.session_state.ratings = {}
 
-# --- 5. Main UI Header ---
+# --- 5. Custom UI Header ---
 col1, col2 = st.columns([1, 5])
 with col1:
-    try: st.image("chef_icon.png", width=70)
+    try: st.image("chef_icon.png", width=75)
     except: st.write("🍳")
 with col2: st.title("Punekar Kitchen Pro")
 
-# --- 6. Sidebar: Inventory Management ---
+# --- 6. Sidebar: Inventory Control (Add & Remove) ---
 with st.sidebar:
     st.header("📦 Inventory Management")
-    with st.expander("➕ Add Stock", expanded=True):
-        cat = st.selectbox("Choose Category:", list(CATEGORIES.keys()))
-        selected = st.multiselect(f"Select {cat}:", CATEGORIES[cat])
+    
+    # ADD SECTION
+    with st.expander("➕ Add New Stock", expanded=True):
+        cat = st.selectbox("Category:", list(CATEGORIES.keys()))
+        selected = st.multiselect(f"Select from {cat}:", CATEGORIES[cat])
         if st.button("Add to Kitchen"):
             for item in selected: st.session_state.my_pantry.add(item)
             st.rerun()
     
+    # MANAGE SECTION
+    with st.expander("📝 Manage/Remove Items", expanded=False):
+        current_items = sorted(list(st.session_state.my_pantry))
+        for item in current_items:
+            cols = st.columns([4, 1])
+            cols[0].write(f"- {item}")
+            if cols[1].button("X", key=f"del_{item}"):
+                st.session_state.my_pantry.remove(item)
+                st.rerun()
+
     st.divider()
-    st.subheader("🛒 Current Stock")
-    st.write(", ".join(sorted(st.session_state.my_pantry)))
-    if st.button("🗑️ Reset Pantry"):
-        st.session_state.my_pantry = set(["Salt", "Turmeric", "Ginger", "Garlic"])
+    if st.button("🗑️ Reset Entire Pantry"):
+        st.session_state.my_pantry = set(["Salt", "Turmeric"])
         st.rerun()
 
-# --- 7. Main Logic (Search & Suggest) ---
+# --- 7. Main Dashboard: Suggest vs Search ---
 st.divider()
 view_mode = st.radio("What's the plan?", ["Suggest based on ingredients", "Search for a dish"], horizontal=True)
 
@@ -104,19 +82,18 @@ if view_mode == "Suggest based on ingredients":
     if ready:
         for r in ready:
             rating = st.session_state.ratings.get(r['name'], "Not rated yet")
-            with st.expander(f"✅ Ready: {r['name']} ({rating})", expanded=False):
+            with st.expander(f"✅ {r['name']} ({rating})", expanded=False):
                 st.write(f"**Instructions:** {r['steps']}")
-                # Rating Input
-                new_rating = st.select_slider(f"Rate {r['name']}:", options=["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"], key=r['name'])
-                if st.button(f"Save Rating", key=f"btn_{r['name']}"):
-                    st.session_state.ratings[r['name']] = new_rating
+                new_r = st.select_slider(f"Rate {r['name']}:", options=["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"], key=r['name'])
+                if st.button("Save Rating", key=f"rate_{r['name']}"):
+                    st.session_state.ratings[r['name']] = new_r
                     st.rerun()
     else:
-        st.info("Nothing is 100% ready. Switch to 'Search' to see what to buy!")
+        st.info("Nothing is 100% ready. Switch to 'Search' to see what you need to buy!")
 
 else:
     st.subheader("🔍 Search for a Dish")
-    query = st.text_input("Type here...", placeholder="Poha, Paneer, Misal...").strip().lower()
+    query = st.text_input("Type dish name...", placeholder="Poha, Paneer, Paratha...").strip().lower()
     if query:
         results = [r for r in recipes if query in r['name'].lower()]
         for r in results:
@@ -124,23 +101,23 @@ else:
             rating = st.session_state.ratings.get(r['name'], "Not rated yet")
             with st.expander(f"📖 {r['name']} ({rating})", expanded=True):
                 st.write(f"**Detailed Recipe:** {r['steps']}")
-                if not missing: st.success("✅ All ingredients available!")
+                if not missing: st.success("✅ All set!")
                 else:
                     st.warning(f"⚠️ Missing: {', '.join(missing)}")
-                    if st.button(f"Add missing items to Shopping List", key=r['name']):
+                    if st.button(f"Add missing to List", key=f"add_{r['name']}"):
                         for i in missing: st.session_state.shopping_list.add(i)
                         st.toast("Updated!")
 
-# --- 8. Shopping List ---
+# --- 8. Smart Shopping List & WhatsApp ---
+st.session_state.shopping_list = {i for i in st.session_state.shopping_list if i not in st.session_state.my_pantry}
+
 if st.session_state.shopping_list:
-    st.session_state.shopping_list = {i for i in st.session_state.shopping_list if i not in st.session_state.my_pantry}
-    if st.session_state.shopping_list:
-        st.divider()
-        st.subheader("🛒 Shopping List")
-        items_list = sorted(list(st.session_state.shopping_list))
-        st.info("\n".join([f"- {i}" for i in items_list]))
-        
-        msg = f"🛒 *Kitchen List:* " + ", ".join(items_list)
-        whatsapp_url = f"https://wa.me/?text={urllib.parse.quote(msg)}"
-        st.markdown(f'''<a href="{whatsapp_url}" target="_blank" style="text-decoration:none;">
-            <div style="background-color:#25D366;color:white;padding:12px;border-radius:10px;text-align:center;font-weight:bold;">📲 WhatsApp List</div></a>''', unsafe_allow_html=True)
+    st.divider()
+    st.subheader("🛒 Shopping List")
+    items_list = sorted(list(st.session_state.shopping_list))
+    st.info("\n".join([f"- {i}" for i in items_list]))
+    
+    msg = f"🛒 *Kitchen List:* " + ", ".join(items_list)
+    whatsapp_url = f"https://wa.me/?text={urllib.parse.quote(msg)}"
+    st.markdown(f'''<a href="{whatsapp_url}" target="_blank" style="text-decoration:none;">
+        <div style="background-color:#25D366;color:white;padding:12px;border-radius:10px;text-align:center;font-weight:bold;">📲 Share Shopping List via WhatsApp</div></a>''', unsafe_allow_html=True)
