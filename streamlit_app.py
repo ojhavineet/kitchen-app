@@ -7,42 +7,41 @@ st.set_page_config(page_title="Punekar Kitchen", page_icon="🍳")
 st.markdown("""
     <style>
     .stButton>button { width: 100%; border-radius: 10px; height: 3em; background-color: #FF4B4B; color: white; font-weight: bold; }
-    .recipe-box { background-color: #f0f2f6; padding: 20px; border-radius: 10px; border-left: 5px solid #FF4B4B; margin-bottom: 20px; }
-    .shopping-box { background-color: #fff4e6; padding: 15px; border-radius: 10px; border: 1px dashed #ff922b; }
+    .recipe-box { background-color: #f0f2f6; padding: 20px; border-radius: 10px; border-left: 5px solid #FF4B4B; margin-bottom: 20px; color: black; }
+    .shopping-box { background-color: #fff4e6; padding: 15px; border-radius: 10px; border: 1px dashed #ff922b; color: black; }
     </style>
-    """, unsafe_allow_value=True)
+    """, unsafe_allow_html=True)
 
 st.title("🍳 Punekar Kitchen")
 st.write("Manage your pantry and get meal ideas instantly.")
 
-# --- 1. The Digital Pantry & Automated Shopping List ---
-inventory = {
-    "Onions / Garlic": True,
-    "Tomatoes": True,
-    "Paneer / Tofu": False,
-    "Rice": True,
-    "Atta / Bhakri Flour": False,
-    "Mixed Veg (Carrot/Beans)": False,
-    "Noodles / Pasta": False,
-    "Cheese / Butter / Cream": False,
-    "Kanda Lasun / Goda Masala": True,
-    "Chinese Sauces": False
-}
+# --- 1. The Digital Pantry ---
+# We use a dictionary to set the initial state
+if 'inventory' not in st.session_state:
+    st.session_state.inventory = {
+        "Onions / Garlic": True,
+        "Tomatoes": True,
+        "Paneer / Tofu": False,
+        "Rice": True,
+        "Atta / Bhakri Flour": False,
+        "Mixed Veg (Carrot/Beans)": False,
+        "Noodles / Pasta": False,
+        "Cheese / Butter / Cream": False,
+        "Kanda Lasun / Goda Masala": True,
+        "Chinese Sauces": False
+    }
 
 with st.expander("🛒 Inventory Check (Tick what you HAVE)", expanded=True):
-    updated_inventory = {}
     col1, col2 = st.columns(2)
-    
-    # Create checkboxes and track what is missing
-    keys = list(inventory.keys())
+    keys = list(st.session_state.inventory.keys())
     for i, item in enumerate(keys):
         column = col1 if i < 5 else col2
-        updated_inventory[item] = column.checkbox(item, value=inventory[item])
+        st.session_state.inventory[item] = column.checkbox(item, value=st.session_state.inventory[item])
 
-# Identify missing items for the shopping list
-missing_items = [item for item, involved in updated_inventory.items() if not involved]
+# Identify missing items
+missing_items = [item for item, have_it in st.session_state.inventory.items() if not have_it]
 
-# --- 2. Enhanced Recipe Database ---
+# --- 2. Recipe Database ---
 recipes = {
     "Maharashtrian": [
         {"name": "Kanda Batata Pohe", "needs": ["Onions / Garlic"], "steps": "1. Soak pohe. 2. Sauté onions, chilies, curry leaves. 3. Add turmeric/salt. 4. Mix pohe and steam."},
@@ -66,28 +65,22 @@ st.divider()
 cuisine = st.radio("What's the mood?", ["Maharashtrian", "Indian", "Chinese", "Continental"], horizontal=True)
 
 if st.button(f"Give me a {cuisine} suggestion"):
-    # Check if we have the ingredients for each recipe in that cuisine
-    available = []
-    for r in recipes[cuisine]:
-        if all(updated_inventory[ing] for ing in r["needs"]):
-            available.append(r)
+    available = [r for r in recipes[cuisine] if all(st.session_state.inventory[ing] for ing in r["needs"])]
     
     if available:
         pick = random.choice(available)
         st.success(f"Suggesting: **{pick['name']}**")
-        st.markdown(f"""<div class="recipe-box"><strong>How to make:</strong><br>{pick['steps']}</div>""", unsafe_allow_value=True)
+        st.markdown(f"""<div class="recipe-box"><strong>How to make:</strong><br>{pick['steps']}</div>""", unsafe_allow_html=True)
     else:
-        st.warning(f"You don't have enough ingredients for a full {cuisine} meal right now. Check your shopping list below!")
+        st.warning(f"You're missing ingredients for a full {cuisine} meal. See the list below!")
 
-# --- 4. The Shopping List (Sticky at the bottom) ---
+# --- 4. The Shopping List ---
 if missing_items:
     st.divider()
     st.subheader("📝 Smart Shopping List")
-    st.write("You are currently out of these items:")
-    
     shop_list_html = "".join([f"<li>{item}</li>" for item in missing_items])
     st.markdown(f"""
     <div class="shopping-box">
         <ul>{shop_list_html}</ul>
     </div>
-    """, unsafe_allow_value=True)
+    """, unsafe_allow_html=True)
