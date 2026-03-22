@@ -1,29 +1,10 @@
 import streamlit as st
-import random
 import urllib.parse
 
-# --- 1. App Configuration (Sets the Browser Tab Icon) ---
-# Ensure 'chef_icon.png' is uploaded to your GitHub folder
-st.set_page_config(
-    page_title="Punekar Kitchen Pro", 
-    page_icon="chef_icon.png", 
-    layout="centered"
-)
+# --- 1. SETTINGS & ICON ---
+st.set_page_config(page_title="Punekar Kitchen Pro", page_icon="chef_icon.png", layout="centered")
 
-# --- 2. Custom Styling ---
-st.markdown("""
-    <style>
-    .stButton>button { width: 100%; border-radius: 10px; background-color: #2e7d32; color: white; height: 3.5em; font-weight: bold; }
-    .whatsapp-btn { 
-        display: block; width: 100%; text-align: center; background-color: #25D366; 
-        color: white !important; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 20px;
-    }
-    .recipe-card { background-color: #ffffff; padding: 15px; border-radius: 12px; border: 1px solid #ddd; color: black; margin-bottom: 15px; box-shadow: 1px 1px 5px rgba(0,0,0,0.1); }
-    .inventory-tag { background-color: #e8f5e9; padding: 4px 10px; border-radius: 12px; display: inline-block; margin: 2px; border: 1px solid #2e7d32; font-size: 0.85em; color: black; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# --- 3. Master Categories (250+ Items organized for your wife) ---
+# --- 2. THE 250+ ITEM MASTER LIST ---
 CATEGORIES = {
     "🥦 Veggies": ["Onion", "Tomato", "Potato", "Ginger", "Garlic", "Green Chili", "Coriander", "Curry Leaves", "Lemon", "Cauliflower", "Cabbage", "Capsicum", "Carrot", "French Beans", "Brinjal", "Okra (Bhindi)", "Bottle Gourd", "Ridge Gourd", "Bitter Gourd", "Pumpkin", "Drumstick", "Spring Onion", "Sweet Potato", "Mint", "Spinach", "Methi", "Radish", "Cucumber", "Beetroot", "Corn", "Mushroom", "Broccoli", "Colocasia Leaves", "Ivy Gourd (Tondli)"],
     "🌾 Grains/Flours": ["Atta", "Rice (Basmati)", "Rice (Indrayani)", "Poha (Thick)", "Poha (Thin)", "Besan", "Maida", "Rava (Suji)", "Jowar Flour", "Bajra Flour", "Nachni Flour", "Sabudana", "Corn Flour", "Vermicelli", "Oats"],
@@ -35,105 +16,110 @@ CATEGORIES = {
     "🧼 Cleaning/Utility": ["Dishwash Soap", "Handwash", "Detergent", "Floor Cleaner", "Garbage Bags", "Kitchen Rolls", "Foil"]
 }
 
-# --- 4. Recipe Database ---
+# --- 3. THE RECIPE DATABASE (With Details) ---
 recipes = [
-    {"name": "Quick Masala Poha", "cuisine": "Quick & Tired", "needs": ["Poha (Thick)", "Onion", "Green Chili"], "allergens": ["Peanuts"], "steps": "Wash poha. Sauté onions and chilies. Add turmeric. Steam for 2 mins."},
-    {"name": "Brinjal Fry (Vangi Kapach)", "cuisine": "Maharashtrian", "needs": ["Brinjal", "Kanda Lasun Masala", "Besan"], "allergens": [], "steps": "Slice brinjal. Coat in masala and besan. Shallow fry on tawa."},
-    {"name": "Schezwan Paneer", "cuisine": "Chinese", "needs": ["Paneer", "Schezwan Sauce", "Capsicum", "Onion"], "allergens": [], "steps": "Sauté onions and capsicum. Add schezwan sauce and paneer cubes. Toss well."},
-    {"name": "Moong Dal Paratha", "cuisine": "Lunchbox Idea", "needs": ["Atta", "Moong Dal", "Ghee"], "allergens": [], "steps": "Stuff paratha with cooked dal. Stays soft for lunch!"},
-    {"name": "Sabudana Khichdi", "cuisine": "Maharashtrian", "needs": ["Sabudana", "Potato", "Green Chili"], "allergens": ["Peanuts"], "steps": "Sauté soaked sabudana with potatoes. Skip peanuts for Dviti."},
-    {"name": "Mini Cheese Uttapam", "cuisine": "Kid's Special", "needs": ["Rice (Indrayani)", "Cheese Cubes", "Tomato"], "allergens": [], "steps": "Small rice pancakes topped with tomatoes and cheese."}
+    {"name": "Quick Masala Poha", "needs": ["Poha (Thick)", "Onion", "Green Chili", "Turmeric"], "steps": "Wash Poha. Sauté onions/chilies. Add turmeric. Steam for 2 mins.", "cuisine": "Quick & Tired"},
+    {"name": "Vangi Bhaji", "needs": ["Brinjal", "Onion", "Goda Masala"], "steps": "Sauté onions and brinjal with Goda Masala. Cook until soft.", "cuisine": "Maharashtrian"},
+    {"name": "Pithla", "needs": ["Besan", "Onion", "Garlic", "Green Chili"], "steps": "Make besan slurry. Sauté garlic/onions. Cook until thick.", "cuisine": "Maharashtrian"},
+    {"name": "Sabudana Khichdi", "needs": ["Sabudana", "Potato", "Green Chili"], "steps": "Sauté cumin/potatoes. Add soaked sabudana. (No peanuts for Dviti).", "cuisine": "Maharashtrian"},
+    {"name": "Schezwan Paneer", "needs": ["Paneer", "Schezwan Sauce", "Capsicum", "Onion"], "steps": "Sauté capsicum/onions. Add sauce and paneer. Toss well.", "cuisine": "Chinese"},
+    {"name": "Moong Dal Paratha", "needs": ["Atta", "Moong Dal", "Ghee"], "steps": "Stuff cooked moong dal into atta dough. Roast with Ghee.", "cuisine": "Lunchbox Idea"}
 ]
 
-# --- 5. State Management ---
+# --- 4. DATA STORAGE ---
 if 'my_pantry' not in st.session_state:
-    st.session_state.my_pantry = set(["Salt", "Turmeric", "Cooking Oil", "Onion", "Tomato"])
-if 'ratings' not in st.session_state:
-    st.session_state.ratings = {}
+    st.session_state.my_pantry = ["Salt", "Turmeric", "Cooking Oil", "Onion", "Tomato"]
+if 'shopping_list' not in st.session_state:
+    st.session_state.shopping_list = []
 
-# --- 6. Sidebar (Wife's Dashboard) ---
+# --- 5. SIDEBAR: INVENTORY MANAGEMENT ---
 with st.sidebar:
-    st.header("🏠 Family Profile")
-    st.write("**Avoiding for Dviti:** Peanuts, Cashews, Eggs, Seafood")
-    st.divider()
+    st.header("📦 Kitchen Stock")
     
-    st.header("➕ Update Kitchen Stock")
-    cat = st.selectbox("Select Category:", list(CATEGORIES.keys()))
-    selected_items = st.multiselect(f"Items in {cat}:", CATEGORIES[cat])
-    
-    if st.button("Add Selected to Kitchen"):
-        for item in selected_items:
-            st.session_state.my_pantry.add(item)
-        st.success("Kitchen Updated!")
-        st.rerun()
-    
-    if st.button("🗑️ Reset All Items"):
-        st.session_state.my_pantry = set(["Salt", "Turmeric", "Cooking Oil"])
-        st.rerun()
+    # ADDING ITEMS
+    with st.expander("➕ Add Items", expanded=True):
+        cat = st.selectbox("Category:", list(CATEGORIES.keys()))
+        selected = st.multiselect(f"Pick {cat}:", CATEGORIES[cat])
+        if st.button("Add to Kitchen"):
+            for item in selected:
+                if item not in st.session_state.my_pantry:
+                    st.session_state.my_pantry.append(item)
+            st.rerun()
 
-# --- 7. Main Interface (Header with Chef Image) ---
+    # REMOVING ITEMS (The specific fix for your screenshot)
+    st.subheader("📝 Currently In Stock")
+    for item in sorted(st.session_state.my_pantry):
+        cols = st.columns([4, 1])
+        cols[0].write(f"• {item}")
+        # Unique key for every item ensures the button works
+        if cols[1].button("X", key=f"remove_{item}"):
+            st.session_state.my_pantry.remove(item)
+            st.rerun()
+
+# --- 6. MAIN HEADER ---
 col1, col2 = st.columns([1, 5])
 with col1:
-    try:
-        st.image("chef_icon.png", width=70)
-    except:
-        st.write("🍳") # Fallback if image not found
-
+    st.image("chef_icon.png", width=75)
 with col2:
     st.title("Punekar Kitchen Pro")
 
-# Show current inventory
-with st.expander(f"📦 Our Kitchen Inventory ({len(st.session_state.my_pantry)} items)", expanded=False):
-    p_list = sorted(list(st.session_state.my_pantry))
-    for p in p_list:
-        st.markdown(f'<div class="inventory-tag">{p}</div>', unsafe_allow_html=True)
-
-# Suggestions Logic
+# --- 7. MAIN FUNCTIONALITY (Search & Suggestions) ---
 st.divider()
-st.subheader("What's for a meal?")
-mode = st.radio("Style:", ["All", "Quick & Tired", "Kid's Special", "Lunchbox Idea", "Maharashtrian", "Indian"], horizontal=True)
+option = st.radio("What do you want to do?", ["See what I can cook now", "Search for a specific dish"], horizontal=True)
 
-if st.button("🔍 Suggest Safe Meals"):
-    matches = [r for r in recipes if all(i in st.session_state.my_pantry for i in r['needs'])]
-    if mode != "All":
-        matches = [r for r in matches if r['cuisine'] == mode]
+if option == "See what I can cook now":
+    st.subheader("👨‍🍳 Ready to Cook")
+    # Logic: Show recipes where all 'needs' are in the pantry
+    available = [r for r in recipes if all(n in st.session_state.my_pantry for n in r['needs'])]
     
-    if matches:
-        for m in matches:
-            rating = st.session_state.ratings.get(m['name'], "Not rated yet")
-            st.markdown(f"""
-            <div class="recipe-card">
-                <h3>{m['name']}</h3>
-                <small>⭐ Rating: {rating} | Category: {m['cuisine']}</small><br><br>
-                <p><b>Instructions:</b> {m['steps']}</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Simple Rating Input
-            new_rating = st.select_slider(f"Rate {m['name']}:", options=["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"], key=m['name'])
-            if st.button(f"Save Rating for {m['name']}"):
-                st.session_state.ratings[m['name']] = new_rating
-                st.rerun()
+    if available:
+        for r in available:
+            with st.expander(f"✅ {r['name']}", expanded=False):
+                st.write(f"**How to cook:** {r['steps']}")
     else:
-        st.warning("Not enough ingredients for this style. Check the shopping list below!")
+        st.info("No 100% matches. Use the 'Search' mode to see what ingredients you are missing.")
 
-# --- 8. The WhatsApp Shopping List (Neutral & Practical) ---
-all_possible_needs = set([i for r in recipes for i in r['needs']])
-missing = sorted([i for i in all_possible_needs if i not in st.session_state.my_pantry])
+else:
+    st.subheader("🔍 Search Recipe")
+    search = st.text_input("Enter dish name:", placeholder="e.g. Poha").strip().lower()
+    if search:
+        results = [r for r in recipes if search in r['name'].lower()]
+        for r in results:
+            missing = [i for i in r['needs'] if i not in st.session_state.my_pantry]
+            with st.expander(f"📖 {r['name']}", expanded=True):
+                st.write(f"**Steps:** {r['steps']}")
+                if not missing:
+                    st.success("✅ You have everything!")
+                else:
+                    st.warning(f"⚠️ Missing: {', '.join(missing)}")
+                    if st.button(f"🛒 Add missing to Shopping List", key=f"shop_{r['name']}"):
+                        for m in missing:
+                            if m not in st.session_state.shopping_list:
+                                st.session_state.shopping_list.append(m)
+                        st.rerun()
 
-if missing:
+# --- 8. SHOPPING LIST & WHATSAPP (Always at bottom) ---
+# Remove items from shopping list if they were added back to pantry
+st.session_state.shopping_list = [i for i in st.session_state.shopping_list if i not in st.session_state.my_pantry]
+
+if st.session_state.shopping_list:
     st.divider()
-    st.subheader("📝 Missing Ingredients")
-    st.write(", ".join(missing))
+    st.subheader("🛒 Shopping List")
+    for s_item in sorted(st.session_state.shopping_list):
+        st.write(f"- {s_item}")
     
-    # Message formatting
-    shop_text = "🛒 *Kitchen Shopping List:*\n"
-    shop_text += "Items needed for upcoming meals:\n\n"
-    for item in missing:
-        shop_text += f"✅ {item}\n"
-    shop_text += "\n_Sent from Punekar Kitchen Pro_"
+    # WhatsApp - Big Green Button
+    msg = "🛒 *Kitchen List:* " + ", ".join(st.session_state.shopping_list)
+    wa_url = f"https://wa.me/?text={urllib.parse.quote(msg)}"
     
-    encoded_text = urllib.parse.quote(shop_text)
-    whatsapp_url = f"https://wa.me/?text={encoded_text}"
+    st.markdown(f'''
+    <a href="{wa_url}" target="_blank" style="text-decoration:none;">
+        <div style="background-color:#25D366;color:white;padding:15px;border-radius:10px;text-align:center;font-weight:bold;font-size:1.1em;box-shadow: 2px 2px 5px rgba(0,0,0,0.1);">
+            📲 Share Shopping List via WhatsApp
+        </div>
+    </a>
+    ''', unsafe_allow_html=True)
     
-    st.markdown(f'<a href="{whatsapp_url}" target="_blank" class="whatsapp-btn">📲 Share Shopping List via WhatsApp</a>', unsafe_allow_html=True)
+    if st.button("🗑️ Clear Shopping List"):
+        st.session_state.shopping_list = []
+        st.rerun()
